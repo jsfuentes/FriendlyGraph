@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 PATH = '/Users/jfuentes/Desktop/facebook-100005512638771/messages/inbox/'
 NAME = 'Jorge J Fuentes'
+DECAY = 350000
 
 class FriendData:
     "Class to store all of the parsed data"
@@ -41,10 +42,20 @@ class FriendData:
         return words_sent + words_received + number_sent + number_received
 
     def getMsgWeight(self, sender, words, number, age):
-        lam = -1/float(250000)
+        lam = -1/float(DECAY)
         decay = math.exp(lam * age)
         return decay * (words)
-        
+    
+    def postProcess(self):
+        newData = {}
+        maxFScore = 0
+        for key, value in self.parsed_data.items():
+            fs = value["friend_score"]
+            maxFScore = max(maxFScore, fs)
+                
+        for key, value in self.parsed_data.items():
+            value["friend_score"] = value["friend_score"] / maxFScore
+            
     def parseData(self):
         for folder in tqdm(os.listdir(self.base_path)):
             if folder == '.DS_Store':
@@ -74,12 +85,12 @@ class FriendData:
                         words_sent += len(msg_content)
                         number_sent += 1
                         self.countWords(msg_content, dict_sent)
-                        friend_score += self.getMsgWeight(True, words_sent, number_sent, msg_age)
+                        friend_score += self.getMsgWeight(True, len(msg_content), 1, msg_age)
                     else:
                         words_received += len(msg_content)
                         number_received += 1
                         self.countWords(msg_content, dict_received)
-                        friend_score += self.getMsgWeight(False, words_received, number_received, msg_age)                
+                        friend_score += self.getMsgWeight(False, len(msg_content), 1, msg_age)                
                 # print(friend_name)
                 self.friend_list.append(friend_name)
                 # print(words_sent, number_sent)
@@ -95,7 +106,12 @@ class FriendData:
                     'dict_sent':dict_sent,
                     'dict_received':dict_received,
                     'friend_coef':friend_coef,
-                    'friend_score':friend_score}
+                    'friend_score':friend_score,
+                    "msg_diff": number_received-number_sent,
+                    "word_diff": words_received-words_sent,
+                }
+        
+        self.postProcess()
                     
 if __name__ == "__main__":
     fd = FriendData(PATH, NAME)
