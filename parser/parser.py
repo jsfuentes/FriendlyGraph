@@ -1,5 +1,7 @@
 import json
+import math
 import os
+import time
 
 class FriendData:
     "Class to store all of the parsed data"
@@ -7,15 +9,16 @@ class FriendData:
     friend_coef = {}
     # takes form {'name': {'words_sent':#, 'words_received':#, etc}}
     parsed_data = {}
-
     base_path = ''
     msg_file = '/message.json'
     my_name = ''
+    time = 0
 
     def __init__(self, base_path, name):
         self.base_path = base_path
         self.my_name = name
         self.parseData()
+        self.time = int(round(time.time() * 1000))
 
     def countWords(self, msg, dict_store):
         for word in msg.split():
@@ -33,6 +36,10 @@ class FriendData:
     def getFriendCoef(self, words_sent, words_received, number_sent, number_received):
         return words_sent + words_received + number_sent + number_received
 
+    def getMsgWeight(self, sender, words, number, age):
+        lam = -1/float(250000)
+        decay = math.exp(lam * age)
+        return decay * (words)
     def parseData(self):
         for folder in os.listdir(self.base_path):
             if folder == '.DS_Store':
@@ -47,12 +54,14 @@ class FriendData:
                 words_sent, words_received = 0, 0
                 dict_sent, dict_received = dict(), dict()
                 number_sent, number_received = 0, 0
+                friend_score = 0
                 for msg in data['messages']:
                     # There are some msgs with no content
                     # TODO: parse out calls and init msgs
                     try:
                         msg_content = msg['content']
                         msg_sender = msg['sender_name']
+                        msg_age = (self.time - msg['timestamp_ms'])/(1000*60)
                     except:
                         continue
                         # return
@@ -60,10 +69,12 @@ class FriendData:
                         words_sent += len(msg_content)
                         number_sent += 1
                         self.countWords(msg_content, dict_sent)
+                        friend_score += self.getMsgWeight(True, words_sent, number_sent, msg_age)
                     else:
                         words_received += len(msg_content)
                         number_received += 1
                         self.countWords(msg_content, dict_received)
+                        friend_score += self.getMsgWeight(False, words_received, number_received, msg_age)                
                 # print(friend_name)
                 self.friend_list.append(friend_name)
                 # print(words_sent, number_sent)
@@ -78,7 +89,8 @@ class FriendData:
                     'number_received':number_received,
                     'dict_sent':dict_sent,
                     'dict_received':dict_received,
-                    'friend_coef':friend_coef}
+                    'friend_coef':friend_coef,
+                    'friend_score':friend_score}
 
 fd = FriendData('/Users/arjunsridhar/Downloads/facebook-arjunsridhar125/messages/inbox/', 'Arjun Sridhar')
 print(fd.friend_coef)
