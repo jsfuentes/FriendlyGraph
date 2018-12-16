@@ -2,6 +2,10 @@ import json
 import math
 import os
 import time
+from tqdm import tqdm
+
+PATH = '/Users/jfuentes/Desktop/facebook-100005512638771/messages/inbox/'
+NAME = 'Jorge J Fuentes'
 
 class FriendData:
     "Class to store all of the parsed data"
@@ -41,7 +45,7 @@ class FriendData:
         decay = math.exp(lam * age)
         return decay * (words)
     def parseData(self):
-        for folder in os.listdir(self.base_path):
+        for folder in tqdm(os.listdir(self.base_path)):
             if folder == '.DS_Store':
                 continue
             with open(self.base_path + folder + self.msg_file) as f:
@@ -91,8 +95,9 @@ class FriendData:
                     'dict_received':dict_received,
                     'friend_coef':friend_coef,
                     'friend_score':friend_score}
-
-fd = FriendData('/Users/arjunsridhar/Downloads/facebook-arjunsridhar125/messages/inbox/', 'Arjun Sridhar')
-print(fd.friend_coef)
-with open('result.json', 'w') as f:
-    json.dump(fd.parsed_data, f)
+                    
+if __name__ == "__main__":
+    fd = FriendData(PATH, NAME)
+    print(fd.friend_coef)
+    with open('result.json', 'w') as f:
+        json.dump(fd.parsed_data, f)
