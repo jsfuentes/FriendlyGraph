@@ -1,5 +1,9 @@
 import json
 import os
+from tqdm import tqdm
+
+PATH = '/Users/jfuentes/Desktop/facebook-100005512638771/messages/inbox/'
+NAME = 'Jorge J Fuentes'
 
 class FriendData:
     "Class to store all of the parsed data"
@@ -34,7 +38,7 @@ class FriendData:
         return words_sent + words_received + number_sent + number_received
 
     def parseData(self):
-        for folder in os.listdir(self.base_path):
+        for folder in tqdm(os.listdir(self.base_path)):
             if folder == '.DS_Store':
                 continue
             with open(self.base_path + folder + self.msg_file) as f:
@@ -79,8 +83,9 @@ class FriendData:
                     'dict_sent':dict_sent,
                     'dict_received':dict_received,
                     'friend_coef':friend_coef}
-
-fd = FriendData('/Users/arjunsridhar/Downloads/facebook-arjunsridhar125/messages/inbox/', 'Arjun Sridhar')
-print(fd.friend_coef)
-with open('result.json', 'w') as f:
-    json.dump(fd.parsed_data, f)
+                    
+if __name__ == "__main__":
+    fd = FriendData(PATH, NAME)
+    print(fd.friend_coef)
+    with open('result.json', 'w') as f:
+        json.dump(fd.parsed_data, f)
