@@ -44,6 +44,7 @@ class FriendData:
         lam = -1/float(250000)
         decay = math.exp(lam * age)
         return decay * (words)
+        
     def parseData(self):
         for folder in tqdm(os.listdir(self.base_path)):
             if folder == '.DS_Store':
