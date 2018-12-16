@@ -1,7 +1,6 @@
 import json
 import os
 
-
 class FriendData:
     "Class to store all of the parsed data"
     friend_list = []
@@ -9,11 +8,13 @@ class FriendData:
     # takes form {'name': {'words_sent':#, 'words_received':#, etc}}
     parsed_data = {}
 
-    base_path = '/Users/arjunsridhar/Downloads/facebook-arjunsridhar125/messages/inbox/'
+    base_path = ''
     msg_file = '/message.json'
-    my_name = 'Arjun Sridhar'
+    my_name = ''
 
-    def __init__(self):
+    def __init__(self, base_path, name):
+        self.base_path = base_path
+        self.my_name = name
         self.parseData()
 
     def countWords(self, msg, dict_store):
@@ -70,7 +71,8 @@ class FriendData:
                 # print('\n'*2)
                 friend_coef = self.getFriendCoef(words_sent, words_received, number_sent, number_received)
                 self.friend_coef[friend_name] = friend_coef
-                self.parsed_data[friend_name] = {'words_sent':words_sent, 
+                self.parsed_data[friend_name] = {'friend_name':friend_name,
+                    'words_sent':words_sent, 
                     'words_received':words_received, 
                     'number_sent':number_sent, 
                     'number_received':number_received,
@@ -78,7 +80,7 @@ class FriendData:
                     'dict_received':dict_received,
                     'friend_coef':friend_coef}
 
-fd = FriendData()
+fd = FriendData('/Users/arjunsridhar/Downloads/facebook-arjunsridhar125/messages/inbox/', 'Arjun Sridhar')
 print(fd.friend_coef)
 with open('result.json', 'w') as f:
-    json.dump(fd.parseData, f)
+    json.dump(fd.parsed_data, f)
